@@ -1,300 +1,4 @@
-<!DOCTYPE html>
-<html lang="th">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jungle Theme Costume Voting</title>
-    
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: { sans: ['Prompt', 'sans-serif'] },
-                    colors: {
-                        jungle: {
-                            50: '#f2fbf5',
-                            100: '#e1f6e8',
-                            200: '#c4ecd4',
-                            300: '#97dbb3',
-                            400: '#64c28c',
-                            500: '#3fa36c',
-                            600: '#2e8253',
-                            700: '#266844',
-                            800: '#215338',
-                            900: '#1c442f',
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        body {
-            background-color: #f2fbf5;
-            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%233fa36c' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-        }
-        .glass-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
-        }
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #f1f1f1; }
-        ::-webkit-scrollbar-thumb { background: #3fa36c; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #2e8253; }
-        
-        .loading-spinner {
-            border: 4px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top: 4px solid #3fa36c;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    </style>
-</head>
-<body class="text-gray-800 antialiased min-h-screen flex flex-col">
-
-    <div id="loadingOverlay" class="fixed inset-0 z-[60] flex flex-col items-center justify-center bg-white">
-        <div class="loading-spinner mb-4"></div>
-        <h2 class="text-xl font-bold text-jungle-600">กำลังโหลดระบบ...</h2>
-    </div>
-
-    <div id="customModal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black bg-opacity-50 transition-opacity duration-300 opacity-0">
-        <div class="bg-white rounded-2xl p-6 max-w-sm w-full mx-4 shadow-2xl transform scale-95 transition-transform duration-300" id="modalContent">
-            <div class="text-center">
-                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-jungle-100 mb-4" id="modalIconContainer">
-                    <i class="fas fa-info-circle text-jungle-600 text-xl" id="modalIcon"></i>
-                </div>
-                <h3 class="text-lg leading-6 font-medium text-gray-900" id="modalTitle">แจ้งเตือน</h3>
-                <div class="mt-2">
-                    <p class="text-sm text-gray-500" id="modalMessage">ข้อความ</p>
-                </div>
-                <div class="mt-5">
-                    <button type="button" onclick="closeModal()" class="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-4 py-2 bg-jungle-600 text-base font-medium text-white hover:bg-jungle-700 focus:outline-none sm:text-sm transition-colors">
-                        ตกลง
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <nav class="bg-jungle-800 text-white shadow-md sticky top-0 z-40">
-        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-16">
-                <div class="flex items-center gap-3 cursor-pointer" onclick="switchView('login')">
-                    <i class="fas fa-leaf text-2xl text-jungle-300"></i>
-                    <span class="font-bold text-xl tracking-wide">Jungle<span class="text-jungle-300">Vote</span></span>
-                </div>
-                <div>
-                    <button onclick="showAdminLogin()" class="text-jungle-200 hover:text-white text-sm font-medium transition-colors">
-                        <i class="fas fa-lock mr-1"></i> Admin
-                    </button>
-                </div>
-            </div>
-        </div>
-    </nav>
-
-    <main class="flex-grow w-full max-w-5xl mx-auto px-4 py-8">
-        
-        <div id="view-login" class="max-w-md mx-auto mt-10">
-            <div class="glass-card rounded-2xl p-8 text-center">
-                <div class="inline-block p-4 rounded-full bg-jungle-100 mb-6">
-                    <i class="fas fa-mask text-4xl text-jungle-600"></i>
-                </div>
-                <h1 class="text-2xl font-bold text-gray-800 mb-2">ยินดีต้อนรับสู่การโหวต</h1>
-                <p class="text-gray-500 mb-8 text-sm">การประกวดชุดแต่งกาย ธีมป่า (Jungle Theme)</p>
-                
-                <div class="text-left mb-6">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">กรอกชื่อพนักงาน (ภาษาอังกฤษพิมพ์เล็กเท่านั้น)</label>
-                    <input type="text" id="loginUsername" 
-                        class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-jungle-500 focus:border-jungle-500 transition-all outline-none"
-                        placeholder="เช่น somchai" autocomplete="off">
-                    <p class="text-xs text-red-500 mt-2 hidden" id="loginError">กรุณากรอกเฉพาะภาษาอังกฤษตัวพิมพ์เล็ก และห้ามเว้นวรรค</p>
-                </div>
-                
-                <button onclick="startVoting()" class="w-full bg-jungle-600 hover:bg-jungle-700 text-white font-bold py-3 px-4 rounded-xl transition-colors shadow-lg shadow-jungle-600/30 flex justify-center items-center gap-2">
-                    เข้าสู่ระบบโหวต <i class="fas fa-arrow-right"></i>
-                </button>
-            </div>
-        </div>
-
-        <div id="view-voting" class="hidden">
-            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
-                <div>
-                    <h2 class="text-2xl font-bold text-jungle-900">ผู้เข้าประกวด</h2>
-                    <p class="text-gray-600 text-sm">โหวตโดย: <span id="currentUserDisplay" class="font-semibold text-jungle-600"></span></p>
-                </div>
-                <div class="bg-amber-100 text-amber-800 px-4 py-2 rounded-xl text-sm font-semibold border border-amber-200 shadow-sm flex items-center gap-2">
-                    <i class="fas fa-exclamation-triangle"></i> บังคับโหวตทุกคน ทุกข้อ (1-10)
-                </div>
-            </div>
-
-            <form id="votingForm" onsubmit="submitVote(event)">
-                <div id="contestantsList" class="space-y-6 mb-8">
-                    <!-- Contestants injected via JS -->
-                </div>
-
-                <div class="sticky bottom-4 z-30 bg-white/95 backdrop-blur p-4 rounded-2xl shadow-xl border border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4">
-                    <div class="text-sm text-gray-600 text-center sm:text-left">
-                        <span id="completionStatus" class="font-bold text-red-500">กรอกคะแนนยังไม่ครบ</span>
-                        <span class="text-xs block mt-1">ให้คะแนน 1-10 ในทุกหัวข้อ</span>
-                    </div>
-                    <button type="submit" id="btnSubmitVote" disabled
-                        class="w-full sm:w-auto px-8 py-3 bg-gray-400 text-white font-bold rounded-xl cursor-not-allowed transition-all shadow-md flex items-center justify-center gap-2">
-                        ส่งผลคะแนน <i class="fas fa-paper-plane"></i>
-                    </button>
-                </div>
-            </form>
-        </div>
-
-        <div id="view-success" class="hidden max-w-md mx-auto mt-20 text-center">
-            <div class="glass-card rounded-2xl p-10">
-                <div class="inline-block p-5 rounded-full bg-green-100 mb-6">
-                    <i class="fas fa-check text-5xl text-green-500"></i>
-                </div>
-                <h2 class="text-2xl font-bold text-gray-800 mb-4">ขอบคุณสำหรับการโหวต!</h2>
-                <p class="text-gray-600 mb-8">ผลคะแนนของคุณถูกบันทึกเข้าระบบคลาวด์เรียบร้อยแล้ว</p>
-                <button onclick="logout()" class="text-jungle-600 hover:text-jungle-800 font-medium underline">
-                    กลับไปหน้าแรก
-                </button>
-            </div>
-        </div>
-
-        <div id="adminLoginModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
-            <div class="bg-white rounded-2xl p-6 max-w-sm w-full mx-4 shadow-2xl">
-                <h3 class="text-lg font-bold mb-4">Admin Login</h3>
-                <input type="password" id="adminPassword" placeholder="รหัสผ่าน" 
-                    class="w-full px-4 py-2 rounded-xl border border-gray-300 mb-4 focus:ring-2 focus:ring-jungle-500 outline-none">
-                <div class="flex gap-2">
-                    <button onclick="closeAdminLogin()" class="flex-1 py-2 bg-gray-200 rounded-xl text-gray-700 hover:bg-gray-300">ยกเลิก</button>
-                    <button onclick="verifyAdmin()" class="flex-1 py-2 bg-jungle-600 text-white rounded-xl hover:bg-jungle-700">เข้าสู่ระบบ</button>
-                </div>
-            </div>
-        </div>
-
-        <div id="editContestantModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
-            <div class="bg-white rounded-2xl p-6 max-w-sm w-full mx-4 shadow-2xl">
-                <h3 class="text-lg font-bold mb-4"><i class="fas fa-edit text-blue-500 mr-2"></i>แก้ไขผู้เข้าประกวด</h3>
-                <input type="hidden" id="editContestantId">
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">ชื่อผู้เข้าประกวด</label>
-                    <input type="text" id="editContestantName" class="w-full px-4 py-2 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none">
-                </div>
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">รูปภาพใหม่ (เว้นว่างถ้าใช้รูปเดิม)</label>
-                    <input type="file" id="editContestantImage" accept="image/*" class="w-full px-4 py-1.5 rounded-xl border border-gray-300 bg-white file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
-                    <p class="text-xs text-gray-400 mt-1">* ระบบจะบีบอัดรูปภาพให้อัตโนมัติ</p>
-                </div>
-                <div class="flex gap-2">
-                    <button onclick="closeEditModal()" class="flex-1 py-2 bg-gray-200 rounded-xl text-gray-700 hover:bg-gray-300">ยกเลิก</button>
-                    <button onclick="saveEditContestant()" class="flex-1 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 shadow-md flex justify-center items-center gap-2">
-                        <span id="btnEditSaveText">บันทึกข้อมูล</span>
-                        <i id="btnEditSaveIcon" class="fas fa-save"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <div id="voterListModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
-            <div class="bg-white rounded-2xl p-6 max-w-md w-full mx-4 shadow-2xl flex flex-col max-h-[80vh]">
-                <div class="flex justify-between items-center mb-4 border-b pb-3 border-gray-100">
-                    <h3 class="text-lg font-bold"><i class="fas fa-users text-jungle-600 mr-2"></i>รายชื่อผู้โหวตทั้งหมด</h3>
-                    <button onclick="closeVoterListModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
-                        <i class="fas fa-times text-xl"></i>
-                    </button>
-                </div>
-                <div class="overflow-y-auto flex-grow pr-2 custom-scrollbar" id="voterListContainer">
-                    <!-- Voter rows injected via JS -->
-                </div>
-            </div>
-        </div>
-
-        <div id="view-admin" class="hidden">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-                <h2 class="text-2xl font-bold text-gray-800"><i class="fas fa-chart-bar text-jungle-600 mr-2"></i> ระบบจัดการ (Admin Dashboard)</h2>
-                <button onclick="logout()" class="text-gray-500 hover:text-red-500 px-4 py-2 rounded-xl border border-gray-300 hover:border-red-500 transition-colors font-medium text-sm">
-                    ออกจากระบบแอดมิน
-                </button>
-            </div>
-
-            <!-- Tabs -->
-            <div class="flex border-b border-gray-200 mb-6 overflow-x-auto whitespace-nowrap">
-                <button onclick="switchAdminTab('results')" id="tab-results" class="px-6 py-3 font-medium text-jungle-600 border-b-2 border-jungle-600 transition-colors">ผลโหวตแบบเรียลไทม์</button>
-                <button onclick="switchAdminTab('manage')" id="tab-manage" class="px-6 py-3 font-medium text-gray-500 hover:text-gray-700 transition-colors">จัดการผู้เข้าประกวด</button>
-            </div>
-
-            <!-- Tab: Results -->
-            <div id="admin-results">
-                <div class="glass-card rounded-2xl p-4 md:p-6 mb-6 shadow-sm border border-gray-100">
-                    <h3 class="text-lg font-bold mb-4">สรุปผลคะแนนรวม (จำแนกตามหัวข้อ)</h3>
-                    <div class="w-full overflow-x-auto">
-                        <div style="min-width: 700px; height: 400px;">
-                            <canvas id="resultsChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-                    <div class="glass-card p-6 rounded-2xl cursor-pointer hover:bg-jungle-50 transition-colors border border-transparent hover:border-jungle-300 shadow-sm hover:shadow-md" onclick="openVoterListModal()" title="คลิกเพื่อดูรายชื่อและจัดการผู้โหวต">
-                        <div class="flex justify-between items-center mb-2">
-                            <div class="text-sm text-gray-500 font-medium">ผู้โหวตทั้งหมด (คลิกเพื่อดู)</div>
-                            <i class="fas fa-search text-jungle-400 bg-jungle-100 p-2 rounded-full"></i>
-                        </div>
-                        <div class="text-4xl font-bold text-jungle-600" id="statTotalVoters">0</div>
-                    </div>
-                    <div class="glass-card p-6 rounded-2xl border border-gray-100 shadow-sm">
-                        <div class="text-sm text-gray-500 mb-2 font-medium text-left">ผู้เข้าประกวดทั้งหมด</div>
-                        <div class="text-4xl font-bold text-gray-700 text-left" id="statTotalContestants">0</div>
-                    </div>
-                    <div class="glass-card p-6 rounded-2xl border border-gray-100 shadow-sm">
-                        <div class="text-sm text-gray-500 mb-2 font-medium text-left">คะแนนรวมในระบบ</div>
-                        <div class="text-4xl font-bold text-jungle-600 text-left" id="statTotalScores">0</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Tab: Manage -->
-            <div id="admin-manage" class="hidden">
-                <div class="glass-card rounded-2xl p-6 mb-6 border border-gray-100 shadow-sm">
-                    <h3 class="text-lg font-bold mb-4"><i class="fas fa-plus-circle text-jungle-600 mr-2"></i>เพิ่มผู้เข้าประกวดใหม่</h3>
-                    <div class="flex flex-col md:flex-row gap-4 items-end">
-                        <div class="flex-1 w-full">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">ชื่อผู้เข้าประกวด</label>
-                            <input type="text" id="newContestantName" class="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-jungle-500 outline-none" placeholder="เช่น ราชสีห์แห่งขุนเขา">
-                        </div>
-                        <div class="flex-1 w-full">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">รูปภาพ (อัปโหลด)</label>
-                            <input type="file" id="newContestantImage" accept="image/*" class="w-full px-4 py-2 rounded-xl border border-gray-300 bg-white file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-jungle-50 file:text-jungle-700 hover:file:bg-jungle-100">
-                        </div>
-                        <button onclick="addContestant()" id="btnAddContestant" class="w-full md:w-auto px-8 py-2.5 bg-jungle-600 text-white font-bold rounded-xl hover:bg-jungle-700 shadow-md transition-colors flex items-center justify-center gap-2">
-                            <span id="btnAddText">เพิ่มลงระบบ</span>
-                            <i id="btnAddIcon" class="fas fa-plus"></i>
-                        </button>
-                    </div>
-                    <p class="text-xs text-gray-400 mt-2">* ภาพจะถูกบีบอัดอัตโนมัติเพื่อประหยัดพื้นที่ Cloud</p>
-                </div>
-
-                <div class="glass-card rounded-2xl p-6 border border-gray-100 shadow-sm">
-                    <h3 class="text-lg font-bold mb-4">รายชื่อปัจจุบัน</h3>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full text-sm text-left text-gray-500">
-                            <thead class="text-xs text-gray-700 uppercase bg-gray-50 rounded-t-xl">
-                                <tr>
-                                    <th class="px-4 py-3 rounded-tl-xl w-16">ลำดับ</th>
-                                    <th class="px-4 py-3 w-24">รูปภาพ</th>
-                                    <th class="px-4 py-3">ชื่อ (ฉายา)</th>
-                                    <th class="px-4 py-3 rounded-tr-xl text-right w-24">จัดการ</th>
-                                </tr>
-                            </thead>
+<!-- ... existing code ... -->
                             <tbody id="adminContestantsTable" class="divide-y divide-gray-100">
                                 <!-- Table rows injected via JS -->
                             </tbody>
@@ -308,7 +12,7 @@
     <script type="module">
         // Import Firebase Modules
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Constants
@@ -328,41 +32,24 @@
 
         window.myChart = null; 
 
-        // ==========================================
-        // 🚀 สำหรับนำไปใช้งานจริงบน GITHUB (ตั้งค่า Database ของคุณเอง)
-        // ==========================================
-        // 1. ไปที่ firebase.google.com สร้างโปรเจกต์ฟรี
-        // 2. ไปที่เมนู Firestore Database กด Create Database
-        // 3. ไปที่เมนู Authentication กด Get Started แล้วเปิดใช้งาน Anonymous (ไม่ระบุตัวตน)
-        // 4. ไปที่ Project Settings (รูปเฟือง) > เลื่อนลงมากดเพิ่มแอป Web (ไอคอน </>) > ก๊อปปี้ Config มาวางแทน null ด้านล่างนี้
-        
+        // 1. นำ Config ของคุณมาใส่ และลบ */ ที่เป็นส่วนเกินออกแล้ว
         const MY_OWN_FIREBASE_CONFIG = {
-  apiKey: "AIzaSyAN55J7-Qp1ctQk_oy75U7qt2VzjH4xn0w",
-  authDomain: "jungle-vote-2026.firebaseapp.com",
-  projectId: "jungle-vote-2026",
-  storageBucket: "jungle-vote-2026.firebasestorage.app",
-  messagingSenderId: "610789867761",
-  appId: "1:610789867761:web:e5af4facf877871043e950",
-  measurementId: "G-J417HL1NHX"
-}; 
-        
-        */
+            apiKey: "AIzaSyAN55J7-Qp1ctQk_oy75U7qt2VzjH4xn0w",
+            authDomain: "jungle-vote-2026.firebaseapp.com",
+            projectId: "jungle-vote-2026",
+            storageBucket: "jungle-vote-2026.firebasestorage.app",
+            messagingSenderId: "610789867761",
+            appId: "1:610789867761:web:e5af4facf877871043e950",
+            measurementId: "G-J417HL1NHX"
+        }; 
 
         // Firebase config
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'jungle-vote-' + Date.now();
         let db = null;
         let auth = null;
         let user = null;
 
         if (MY_OWN_FIREBASE_CONFIG) {
-            // ใช้ Firebase ของผู้ใช้เอง (กรณีรันบน GitHub หรือเซิร์ฟเวอร์จริง)
             const app = initializeApp(MY_OWN_FIREBASE_CONFIG);
-            db = getFirestore(app);
-            auth = getAuth(app);
-        } else if (typeof __firebase_config !== 'undefined') {
-            // ใช้ Firebase ชั่วคราวของระบบทดสอบ
-            const firebaseConfig = JSON.parse(__firebase_config);
-            const app = initializeApp(firebaseConfig);
             db = getFirestore(app);
             auth = getAuth(app);
         }
@@ -370,43 +57,34 @@
         // --- Database Initialization ---
         async function initDatabase() {
             if (!auth || !db) {
-                // Run in local memory mode (e.g. if exported and run without config)
-                console.warn("Firebase not configured. Running in local memory mode.");
-                seedInitialMemoryData();
+                console.warn("Firebase not configured.");
                 finishLoading();
                 return;
             }
 
             try {
-                // Rule 3: Auth Before Queries
-                if (typeof __initial_auth_token !== 'undefined') {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
+                await signInAnonymously(auth);
                 user = auth.currentUser;
                 
                 if (!user) return;
 
-                const contestantsRef = collection(db, 'artifacts', appId, 'public', 'data', 'contestants');
-                const votesRef = collection(db, 'artifacts', appId, 'public', 'data', 'votes');
+                // 2. แก้ไข Path ให้ตายตัว (ข้อมูลจะได้ไม่หายเวลาโหลดหน้าใหม่)
+                const contestantsRef = collection(db, 'jungle_data', 'public', 'contestants');
+                const votesRef = collection(db, 'jungle_data', 'public', 'votes');
 
                 // Seed default data only if DB is completely empty
                 const snap = await getDocs(contestantsRef);
                 if (snap.empty) {
                     const defaultContestants = [
-                        { id: 1, name: 'พรานป่าผู้ล่าฝัน', image: 'https://placehold.co/400x400/215338/ffffff?text=พรานป่า\nผู้ล่าฝัน' },
-                        { id: 2, name: 'เทพธิดาอเมซอน', image: 'https://placehold.co/400x400/3fa36c/ffffff?text=เทพธิดา\nอเมซอน' },
-                        { id: 3, name: 'ทาร์ซานแห่งคิวเทค', image: 'https://placehold.co/400x400/8B4513/ffffff?text=ทาร์ซาน\nแห่งคิวเทค' },
-                        { id: 4, name: 'เจ้าหญิงพฤกษา', image: 'https://placehold.co/400x400/556B2F/ffffff?text=เจ้าหญิง\nพฤกษา' },
-                        { id: 5, name: 'วิญญาณเสือดำ', image: 'https://placehold.co/400x400/1a1a1a/ffffff?text=วิญญาณ\nเสือดำ' }
+                        { id: 1, name: 'พรานป่าผู้ล่าฝัน', image: 'https://placehold.co/400x400/215338/ffffff?text=พรานป่า' },
+                        { id: 2, name: 'เทพธิดาอเมซอน', image: 'https://placehold.co/400x400/3fa36c/ffffff?text=เทพธิดา' }
                     ];
                     for (const c of defaultContestants) {
                         await setDoc(doc(contestantsRef, c.id.toString()), c);
                     }
                 }
 
-                // Rule 1 & 2: Listen to changes without complex queries
+                // Listen to changes
                 onSnapshot(contestantsRef, (snapshot) => {
                     window.state.contestants = [];
                     snapshot.forEach(doc => {
@@ -414,9 +92,12 @@
                     });
                     window.state.contestants.sort((a, b) => a.id - b.id);
                     
-                    if (!document.getElementById('view-voting').classList.contains('hidden')) renderContestantsForVoting();
-                    if (!document.getElementById('view-admin').classList.contains('hidden')) renderAdminDashboard();
-                }, (error) => console.error("Contestants Listener Error:", error));
+                    const viewVoting = document.getElementById('view-voting');
+                    const viewAdmin = document.getElementById('view-admin');
+                    
+                    if (viewVoting && !viewVoting.classList.contains('hidden')) renderContestantsForVoting();
+                    if (viewAdmin && !viewAdmin.classList.contains('hidden')) renderAdminDashboard();
+                }, (error) => { throw new Error(error.message); });
 
                 onSnapshot(votesRef, (snapshot) => {
                     window.state.votes = [];
@@ -427,38 +108,30 @@
                         window.state.votedUsers.add(data.voter);
                     });
                     
-                    if (!document.getElementById('view-admin').classList.contains('hidden')) {
+                    const viewAdmin = document.getElementById('view-admin');
+                    if (viewAdmin && !viewAdmin.classList.contains('hidden')) {
                         updateAdminChart();
                         renderVoterList();
                     }
-                }, (error) => console.error("Votes Listener Error:", error));
+                }, (error) => { throw new Error(error.message); });
 
                 finishLoading();
 
             } catch (error) {
                 console.error("Initialization Error:", error);
-                finishLoading();
-                window.showModal('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อฐานข้อมูลได้', true);
+                throw error; // ทะลุ Error ไปให้หน้าต่างสีแดงแสดง
             }
-        }
-
-        function seedInitialMemoryData() {
-            window.state.contestants = [
-                { id: 1, name: 'พรานป่าผู้ล่าฝัน', image: 'https://placehold.co/400x400/215338/ffffff?text=พรานป่า\nผู้ล่าฝัน' },
-                { id: 2, name: 'เทพธิดาอเมซอน', image: 'https://placehold.co/400x400/3fa36c/ffffff?text=เทพธิดา\nอเมซอน' },
-                { id: 3, name: 'ทาร์ซานแห่งคิวเทค', image: 'https://placehold.co/400x400/8B4513/ffffff?text=ทาร์ซาน\nแห่งคิวเทค' },
-                { id: 4, name: 'เจ้าหญิงพฤกษา', image: 'https://placehold.co/400x400/556B2F/ffffff?text=เจ้าหญิง\nพฤกษา' },
-                { id: 5, name: 'วิญญาณเสือดำ', image: 'https://placehold.co/400x400/1a1a1a/ffffff?text=วิญญาณ\nเสือดำ' }
-            ];
         }
 
         function finishLoading() {
             const overlay = document.getElementById('loadingOverlay');
-            overlay.style.opacity = '0';
-            setTimeout(() => overlay.classList.add('hidden'), 500);
+            if(overlay) {
+                overlay.style.opacity = '0';
+                setTimeout(() => overlay.classList.add('hidden'), 500);
+            }
         }
 
-        // --- Core UI Functions (Mapped to Window) ---
+        // --- Core UI Functions ---
         window.showModal = function(title, message, isError = false) {
             const modal = document.getElementById('customModal');
             const modalContent = document.getElementById('modalContent');
@@ -487,18 +160,25 @@
         window.closeModal = function() {
             const modal = document.getElementById('customModal');
             const modalContent = document.getElementById('modalContent');
-            modal.classList.add('opacity-0');
-            modalContent.classList.remove('scale-100');
-            modalContent.classList.add('scale-95');
-            setTimeout(() => modal.classList.add('hidden'), 300);
+            if(modal && modalContent) {
+                modal.classList.add('opacity-0');
+                modalContent.classList.remove('scale-100');
+                modalContent.classList.add('scale-95');
+                setTimeout(() => modal.classList.add('hidden'), 300);
+            }
         }
 
         window.switchView = function(viewName) {
             ['login', 'voting', 'success', 'admin'].forEach(v => {
-                document.getElementById(`view-${v}`).classList.add('hidden');
+                const el = document.getElementById(`view-${v}`);
+                if (el) el.classList.add('hidden');
             });
-            document.getElementById(`view-${viewName}`).classList.remove('hidden');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            
+            const targetView = document.getElementById(`view-${viewName}`);
+            if (targetView) {
+                targetView.classList.remove('hidden');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
 
             if (viewName === 'voting') renderContestantsForVoting();
             else if (viewName === 'admin') renderAdminDashboard();
@@ -649,12 +329,8 @@
 
             try {
                 if (db && user) {
-                    const voteRef = doc(db, 'artifacts', appId, 'public', 'data', 'votes', window.state.currentUser);
+                    const voteRef = doc(db, 'jungle_data', 'public', 'votes', window.state.currentUser);
                     await setDoc(voteRef, userVoteData);
-                } else {
-                    // Fallback local memory
-                    window.state.votes.push(userVoteData);
-                    window.state.votedUsers.add(window.state.currentUser);
                 }
                 window.switchView('success');
             } catch (error) {
@@ -804,7 +480,7 @@
                 const img = new Image();
                 img.onload = function() {
                     const canvas = document.createElement('canvas');
-                    const MAX_SIZE = 500; // ปรับลดขนาดให้เล็กลงเพื่อให้โหลดเร็วที่สุดบนเน็ตมือถือ
+                    const MAX_SIZE = 500; 
                     let width = img.width;
                     let height = img.height;
 
@@ -820,7 +496,7 @@
                     canvas.height = height;
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, width, height);
-                    callback(canvas.toDataURL('image/jpeg', 0.6)); // ลด Quality ลงเหลือ 60% เพื่อประหยัดพื้นที่ Database
+                    callback(canvas.toDataURL('image/jpeg', 0.6)); 
                 };
                 img.src = e.target.result;
             };
@@ -838,7 +514,6 @@
             const name = nameInput.value.trim();
             if (!name) return window.showModal('ข้อมูลไม่ครบ', 'กรุณากรอกชื่อผู้เข้าประกวด', true);
 
-            // UI Loading state
             btn.disabled = true;
             btnText.innerText = "กำลังอัปโหลด...";
             btnIcon.className = "fas fa-spinner fa-spin";
@@ -850,10 +525,7 @@
                 const newC = { id: newId, name: name, image: finalImage };
                 try {
                     if (db && user) {
-                        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'contestants', newId.toString()), newC);
-                    } else {
-                        window.state.contestants.push(newC);
-                        renderAdminTable();
+                        await setDoc(doc(db, 'jungle_data', 'public', 'contestants', newId.toString()), newC);
                     }
                     nameInput.value = ''; fileInput.value = '';
                     window.showModal('สำเร็จ', 'เพิ่มผู้เข้าประกวดเรียบร้อยแล้ว');
@@ -882,10 +554,7 @@
             if(confirm("แน่ใจหรือไม่ว่าต้องการลบผู้เข้าประกวดคนนี้?")) {
                 try {
                     if (db && user) {
-                        await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'contestants', id.toString()));
-                    } else {
-                        window.state.contestants = window.state.contestants.filter(c => c.id !== id);
-                        renderAdminTable();
+                        await deleteDoc(doc(db, 'jungle_data', 'public', 'contestants', id.toString()));
                     }
                 } catch (e) {
                     console.error(e);
@@ -924,12 +593,7 @@
                 try {
                     const updatedC = { id: id, name: newName, image: finalImage };
                     if (db && user) {
-                        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'contestants', id.toString()), updatedC);
-                    } else {
-                        const idx = window.state.contestants.findIndex(c => c.id === id);
-                        window.state.contestants[idx] = updatedC;
-                        renderAdminTable();
-                        updateAdminChart();
+                        await setDoc(doc(db, 'jungle_data', 'public', 'contestants', id.toString()), updatedC);
                     }
                     window.closeEditModal();
                     window.showModal('สำเร็จ', 'อัปเดตข้อมูลผู้เข้าประกวดเรียบร้อยแล้ว');
@@ -989,12 +653,7 @@
             if(confirm(`ต้องการลบผลโหวตของ "${username}" ใช่หรือไม่? พนักงานจะสามารถโหวตใหม่ได้`)) {
                 try {
                     if (db && user) {
-                        await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'votes', username));
-                    } else {
-                        window.state.votedUsers.delete(username);
-                        window.state.votes = window.state.votes.filter(v => v.voter !== username);
-                        renderVoterList();
-                        updateAdminChart();
+                        await deleteDoc(doc(db, 'jungle_data', 'public', 'votes', username));
                     }
                 } catch(e) {
                     console.error(e);
